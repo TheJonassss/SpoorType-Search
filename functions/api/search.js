@@ -5,9 +5,8 @@
 
 import blocklist from "./blocklist.json";
 
-// ── Ajustes (cámbialos en una línea) ─────────────────────────────
-const QUERY_ANCHOR = "typeface";   // "" = nombre tal cual · "typeface" = ancla de contexto
-const MAX_RESULTS  = 10;           // resultados a pedir a Serper
+const QUERY_ANCHOR = "typeface";
+const MAX_RESULTS  = 10;
 
 const PORTFOLIO_DOMAINS = [
   "behance.net", "dribbble.com", "fontsinuse.com", "are.na",
@@ -18,8 +17,12 @@ export async function onRequestGet(context) {
   const { request, env } = context;
   const q = (new URL(request.url).searchParams.get("q") || "").trim();
 
-  if (!q)                  return json({ error: "missing_query" }, 400);
-  if (!env.SERPER_API_KEY) return json({ error: "missing_key", hint: "SERPER_API_KEY no está definida en este entorno" }, 500);
+  // limpiamos la key de espacios/saltos invisibles que se cuelan al pegar
+  const rawKey = env.SERPER_API_KEY || "";
+  const key = rawKey.trim();
+
+  if (!q)     return json({ error: "missing_query" }, 400);
+  if (!key)   return json({ error: "missing_key", hint: "SERPER_API_KEY no está definida en este entorno" }, 500);
 
   const exclusions = (blocklist.query_exclusions?.dominios || [])
     .map(d => `-site:${d}`).join(" ");
@@ -30,18 +33,23 @@ export async function onRequestGet(context) {
   try {
     const res = await fetch("https://google.serper.dev/search", {
       method: "POST",
-      headers: { "X-API-KEY": env.SERPER_API_KEY, "Content-Type": "application/json" },
+      headers: { "X-API-KEY": key, "Content-Type": "application/json" },
       body: JSON.stringify({ q: googleQuery, num: MAX_RESULTS })
     });
 
-    // Diagnóstico claro según lo que conteste Serper:
     if (res.status === 429) {
-      return json({ error: "quota" }, 429);                      // rate / sin créditos → modal
+      return json({ error: "quota" }, 429);
     }
     if (res.status === 401 || res.status === 403) {
-      // key inválida, ausente o mal copiada (NO es cuota)
       const detail = await safeText(res);
-      return json({ error: "auth", status: res.status, detail }, 502);
+      // pistas seguras (NO revelan la key): largo y si traía espacios
+      return json({
+        error: "auth",
+        status: res.status,
+        detail,
+        keyLength: key.length,
+        hadWhitespace: rawKey !== key
+      }, 502);
     }
     if (!res.ok) {
       const detail = await safeText(res);
@@ -65,9 +73,9 @@ export async function onRequestGet(context) {
 
     if (!allow.has(bare) && isBlocked(bare, blocked)) continue;
 
-    const key = bare + "|" + (item.title || "");
-    if (seen.has(key)) continue;
-    seen.add(key);
+    const dedupKey = bare + "|" + (item.title || "");
+    if (seen.has(dedupKey)) continue;
+    seen.add(dedupKey);
 
     results.push({
       t:   item.title || bare,
