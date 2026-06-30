@@ -1,5 +1,5 @@
 # SPOOR©
-// Beta //
+// Beta // WIP
 
 **Find where a typeface lives on the web.**
 
@@ -50,7 +50,7 @@ spoor/
 
 SPOOR is a static page plus one serverless function. It needs a single environment variable:
 
-- `SERPER_API_KEY` — a key from [serper.dev](https://serper.dev) (free tier available).
+- `FIRECRAWL_API_KEY` — a key from [firecrawl.dev](https://firecrawl.dev/) (free tier available).
 
 Set it in your host's environment variables (never in the code), connect the repo, and deploy. The function reads the key at runtime and keeps it server-side.
 
