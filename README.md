@@ -1,4 +1,5 @@
 # SPOOR©
+// Beta //
 
 **Find where a typeface lives on the web.**
 
