@@ -1,0 +1,97 @@
+{
+  "_meta": {
+    "producto": "RASTRO",
+    "archivo": "blocklist.json",
+    "version": "1.0",
+    "actualizado": "2026-06-27",
+    "decisiones": ["KB_04 #7 (alcance: web abierta + blocklist)", "KB_04 #8 (foundries fuera vía directorio)"],
+    "como_se_aplica": [
+      "1. query_exclusions  -> se inyectan como '-site:' en la query del SERP API. Mantener esta lista corta (<~30) por el limite de largo de query. Son los ofensores de mayor frecuencia: ocupan slots de resultados, asi que conviene que el buscador ni los traiga.",
+      "2. post_filter.*      -> se aplican en codigo sobre los resultados YA devueltos. Sin limite de tamano. Aqui vive el grueso, incluido el directorio de foundries.",
+      "Orden del pipeline (ver KB_02): query con -site: -> post_filter -> dedup -> ranking (portafolio arriba).",
+      "Matching: comparar el hostname del resultado contra cada entrada como sufijo (bloquea el dominio y sus subdominios). Dominios en minusculas, sin esquema ni 'www.'.",
+      "La misma lista aplica al mecanismo tecnico (HTTP Archive): un dominio que vende/aloja su propia fuente tampoco es showcase."
+    ]
+  },
+
+  "query_exclusions": {
+    "_nota": "Ofensores de mayor frecuencia. Van como -site: en la query. Mantener corta.",
+    "dominios": [
+      "myfonts.com",
+      "fonts.adobe.com",
+      "fonts.google.com",
+      "fonts.com",
+      "creativemarket.com",
+      "wikipedia.org",
+      "pinterest.com",
+      "canva.com",
+      "dafont.com",
+      "fontsquirrel.com"
+    ]
+  },
+
+  "post_filter": {
+    "venden_o_alojan_la_fuente": [
+      "typekit.com",
+      "fontspring.com",
+      "type.network",
+      "futurefonts.xyz",
+      "linotype.com",
+      "monotype.com",
+      "fontshop.com",
+      "youworkforthem.com"
+    ],
+    "identificadores_herramientas_specimen": [
+      "whatfontis.com",
+      "whatthefont.com",
+      "identifont.com",
+      "wordmark.it",
+      "fontjoy.com"
+    ],
+    "referencia_enciclopedia": [
+      "fandom.com",
+      "wikia.com"
+    ],
+    "pirateria_free_fonts": [
+      "1001fonts.com",
+      "fontsly.com",
+      "befonts.com",
+      "freefontsdownload.net",
+      "fontspace.com"
+    ],
+    "stock_plantillas": [
+      "envato.com",
+      "shutterstock.com",
+      "freepik.com"
+    ]
+  },
+
+  "foundries": {
+    "_nota": "Capa directorio (KB_04 #8). La lista AUTORITATIVA son los ~1,200 dominios de type.lol, extraidos UNA vez a snapshot estatico y refrescados a mano. Lo de abajo es solo un SEED de arranque para prototipar: VERIFICAR cada dominio y REEMPLAZAR/AMPLIAR con la extraccion completa de type.lol en la fase de build.",
+    "fuente_snapshot": "https://type.lol/",
+    "dominios_seed": [
+      "grillitype.com",
+      "commercialtype.com",
+      "colophon-foundry.org",
+      "abcdinamo.com",
+      "typography.com",
+      "fontbureau.com",
+      "lineto.com",
+      "milieugrotesque.com",
+      "swisstypefaces.com",
+      "typetogether.com",
+      "hvdfonts.com",
+      "okaytype.com",
+      "pangrampangram.com",
+      "sharptype.co",
+      "ohnotype.co"
+    ]
+  },
+
+  "allowlist": {
+    "_nota": "Excepciones que NUNCA se bloquean aunque matcheen alguna capa. Fonts In Use se queda dentro (KB_04 #1): es descubrimiento de terceros, no eco self-reported.",
+    "dominios": [
+      "fontsinuse.com"
+    ]
+  }
+}
