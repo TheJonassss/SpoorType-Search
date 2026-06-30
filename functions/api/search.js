@@ -48,7 +48,9 @@ export async function onRequestGet(context) {
         status: res.status,
         detail,
         keyLength: key.length,
-        hadWhitespace: rawKey !== key
+        hadWhitespace: rawKey !== key,
+        keyStart: key.slice(0, 4),
+        keyEnd: key.slice(-4)
       }, 502);
     }
     if (!res.ok) {
