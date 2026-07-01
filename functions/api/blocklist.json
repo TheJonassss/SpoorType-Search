@@ -1,12 +1,12 @@
 {
   "_meta": {
-    "producto": "RASTRO",
+    "producto": "SPOOR",
     "archivo": "blocklist.json",
-    "version": "1.0",
-    "actualizado": "2026-06-27",
+    "version": "1.1",
+    "actualizado": "2026-06-30",
     "decisiones": ["KB_04 #7 (alcance: web abierta + blocklist)", "KB_04 #8 (foundries fuera vía directorio)"],
     "como_se_aplica": [
-      "1. query_exclusions  -> se inyectan como '-site:' en la query del SERP API. Mantener esta lista corta (<~30) por el limite de largo de query. Son los ofensores de mayor frecuencia: ocupan slots de resultados, asi que conviene que el buscador ni los traiga.",
+      "1. query_exclusions  -> se inyectan como '-site:' en la query del search API. Mantener corta (<~30). Ofensores de mayor frecuencia. NOTA: si el proveedor (Firecrawl) ignora los -site:, estos dominios igual se filtran porque tambien entran al post_filter (ver buildBlockSet en search.js).",
       "2. post_filter.*      -> se aplican en codigo sobre los resultados YA devueltos. Sin limite de tamano. Aqui vive el grueso, incluido el directorio de foundries.",
       "Orden del pipeline (ver KB_02): query con -site: -> post_filter -> dedup -> ranking (portafolio arriba).",
       "Matching: comparar el hostname del resultado contra cada entrada como sufijo (bloquea el dominio y sus subdominios). Dominios en minusculas, sin esquema ni 'www.'.",
@@ -52,12 +52,29 @@
       "fandom.com",
       "wikia.com"
     ],
+    "referencia_pairings": [
+      "typewolf.com",
+      "maxibestof.one",
+      "pimpmytype.com"
+    ],
+    "repos_y_codigo": [
+      "github.com",
+      "raw.githubusercontent.com",
+      "gitlab.com"
+    ],
     "pirateria_free_fonts": [
       "1001fonts.com",
       "fontsly.com",
       "befonts.com",
       "freefontsdownload.net",
-      "fontspace.com"
+      "fontspace.com",
+      "ifonts.xyz",
+      "fontmirror.com",
+      "cdnfonts.com",
+      "ffonts.net",
+      "onlinewebfonts.com",
+      "freefontsfamily.com",
+      "fontget.com"
     ],
     "stock_plantillas": [
       "envato.com",
@@ -67,7 +84,7 @@
   },
 
   "foundries": {
-    "_nota": "Capa directorio (KB_04 #8). La lista AUTORITATIVA son los ~1,200 dominios de type.lol, extraidos UNA vez a snapshot estatico y refrescados a mano. Lo de abajo es solo un SEED de arranque para prototipar: VERIFICAR cada dominio y REEMPLAZAR/AMPLIAR con la extraccion completa de type.lol en la fase de build.",
+    "_nota": "Capa directorio (KB_04 #8). La lista AUTORITATIVA son los ~1,200 dominios de type.lol, extraidos UNA vez a snapshot estatico y refrescados a mano. Lo de abajo es solo un SEED de arranque para prototipar: VERIFICAR cada dominio y REEMPLAZAR/AMPLIAR con la extraccion completa de type.lol en la fase de build. Incluye nonfoundry.com (la propia foundry: su pagina = eco self-reported, no descubrimiento).",
     "fuente_snapshot": "https://type.lol/",
     "dominios_seed": [
       "grillitype.com",
@@ -84,7 +101,9 @@
       "okaytype.com",
       "pangrampangram.com",
       "sharptype.co",
-      "ohnotype.co"
+      "ohnotype.co",
+      "klim.co.nz",
+      "nonfoundry.com"
     ]
   },
 
