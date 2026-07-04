@@ -1,64 +1,62 @@
 # SPOOR©
-// Beta // WIP
 
-**Find where a typeface lives on the web.**
+**Find where a Google Font lives on the web.**
 
-SPOOR is a free search tool for the type community. Type the name of a typeface and get back a list of real-world projects and websites where it has been used, each linking straight to the source.
+SPOOR is a free search tool for the type community. Type the name of a Google Fonts family and get back a list of real websites that load that font in their code, ranked by popularity, each linking straight to the site.
 
-It is a search engine, not a platform — no uploads, no accounts, no human curation. SPOOR doesn't store or crawl anything of its own; it leans on data and searches that already exist.
+It is a search engine, not a platform — no uploads, no accounts, no human curation. Just a box and a list of results.
 
 ---
 
-## Who it's for
+## What it does
 
-- **Type foundries & designers** tracking where their typefaces show up in the wild, without waiting for someone to submit it somewhere.
-- **Graphic designers** researching how a typeface has been used before choosing it.
+Type a Google Font (e.g. *Poppins*) and SPOOR returns the sites that actually **use** it — not sites that merely mention it by name, but sites that load the font in their CSS. Results are ordered by site popularity, most-visited first.
 
-SPOOR works best with **distinctive names**. A unique foundry name like *Söhne*, *Migra*, or *GT Sectra* mentioned on a page almost always means real usage, with very little noise.
+## What it is not
+
+- **Not for fonts outside Google Fonts.** Self-hosted (commercial) foundries, Adobe Fonts, print: out of scope.
+- **Not a text search.** It doesn't look for the font's name across the web (that was tried and dropped — too noisy). It detects real usage in site code.
+- **Not a font identifier.** No image recognition.
+- **Not a foundry or marketplace.** It doesn't sell or host fonts.
 
 ---
 
 ## How it works
 
-SPOOR finds typefaces through two complementary mechanisms:
+One mechanism: **technical detection via HTTP Archive.**
 
-1. **Textual** — a search API (Serper) looks across the open web for projects that *name* the typeface in their title, description, or copy. These surface as **portfolio** results.
-2. **Technical** *(phase 2)* — HTTP Archive (via BigQuery) detects sites that actually *load* the font through their CSS. These surface as **web** results.
+1. **Monthly pre-compute (BigQuery).** A single query over the public [HTTP Archive](https://httparchive.org/) dataset extracts every Google Fonts request — `family → domain → rank` — deduplicated by root domain and capped to the top-100 most popular domains per family.
+2. **Index in Cloudflare D1.** That result is loaded into a free SQLite database at the edge.
+3. **Live search.** A serverless function queries D1 by family name and returns the domains, ordered by popularity. User searches never touch BigQuery.
 
-Results from both are merged into a single ranked list — portfolio first, web as filler — and cleaned through a two-layer blocklist (see `functions/api/blocklist.json`) that removes predictable noise: font marketplaces, identifiers, encyclopedias, piracy sites, and foundry storefronts.
+## Honest limits
 
-### Honest limits
+SPOOR shows a large sample, not a census:
 
-- A typeface used inside an image that nobody named is **invisible** — SPOOR finds named or detectable uses, it doesn't recognize fonts in pictures.
-- Generic names (*Helvetica*, *Futura*) are noisier than distinctive ones.
-- Technical detection is a monthly snapshot, not real-time.
+- Only sites that HTTP Archive crawls (the CrUX list of sites with Chrome traffic). Smaller sites may not appear.
+- Only each site's homepage (and some internal pages), not the whole site.
+- Only Google Fonts. Self-hosted and Adobe are out of scope.
+- A monthly snapshot, not real-time.
+
+A font used inside an image, or loaded on a page that isn't crawled, is invisible here. SPOOR states this openly rather than pretending to be complete.
 
 ---
 
-## Project structure
+## Stack
 
-```
-spoor/
-├── index.html                  # the interface (static, no framework)
-└── functions/
-    └── api/
-        ├── search.js           # serverless search function (Cloudflare)
-        └── blocklist.json      # two-layer noise filter
-```
+- **Data:** HTTP Archive via Google BigQuery (public dataset).
+- **Index:** Cloudflare D1.
+- **Hosting + function:** Cloudflare Pages.
 
-## Running it
+## Monthly refresh
 
-SPOOR is a static page plus one serverless function. It needs a single environment variable:
-
-- `FIRECRAWL_API_KEY` — a key from [firecrawl.dev](https://firecrawl.dev/) (free tier available).
-
-Set it in your host's environment variables (never in the code), connect the repo, and deploy. The function reads the key at runtime and keeps it server-side.
+Re-run the BigQuery extraction, reload D1. Manual, no crawler, no scheduler.
 
 ---
 
 ## Typeface
 
-SPOOR is set entirely in **Pliant**, by [Non Foundry](https://fonts.google.com/specimen/Pliant) — a deliberate choice: the tool for tracking type, dressed in the maker's own type.
+SPOOR is set in **Pliant**, by [Non Foundry](https://fonts.google.com/specimen/Pliant) — a deliberate choice: the tool for tracking Google Fonts, dressed in the maker's own Google Font.
 
 ## Credits
 
