@@ -4,8 +4,6 @@
 
 SPOOR is a free search tool for the type community. Type the name of a Google Fonts family and get back a list of real websites that load that font in their code, ranked by popularity, each linking straight to the site.
 
-It is a search engine, not a platform — no uploads, no accounts, no human curation. Just a box and a list of results.
-
 ---
 
 ## What it does
@@ -15,7 +13,7 @@ Type a Google Font (e.g. *Poppins*) and SPOOR returns the sites that actually **
 ## What it is not
 
 - **Not for fonts outside Google Fonts.** Self-hosted (commercial) foundries, Adobe Fonts, print: out of scope.
-- **Not a text search.** It doesn't look for the font's name across the web (that was tried and dropped — too noisy). It detects real usage in site code.
+- **Not a text search.** It doesn't look for the font's name across the web. It detects real usage in site code.
 - **Not a font identifier.** No image recognition.
 - **Not a foundry or marketplace.** It doesn't sell or host fonts.
 
@@ -38,7 +36,7 @@ SPOOR shows a large sample, not a census:
 - Only Google Fonts. Self-hosted and Adobe are out of scope.
 - A monthly snapshot, not real-time.
 
-A font used inside an image, or loaded on a page that isn't crawled, is invisible here. SPOOR states this openly rather than pretending to be complete.
+A font used inside an image, or loaded on a page that isn't crawled, is invisible here. SPOOR states this openly rather.
 
 ---
 
@@ -50,7 +48,7 @@ A font used inside an image, or loaded on a page that isn't crawled, is invisibl
 
 ## Monthly refresh
 
-Re-run the BigQuery extraction, reload D1. Manual, no crawler, no scheduler.
+Re-run the BigQuery extraction, reload D1.
 
 ---
 
