@@ -4,11 +4,17 @@
 
 SPOOR is a free search tool for the type community. Type the name of a Google Fonts family and get back a list of real websites that load that font in their code, ranked by popularity, each linking straight to the site.
 
+![SPOOR — home](assets/home.jpg)
+
+It is a search engine, not a platform — no uploads, no accounts, no human curation. Just a box and a list of results.
+
 ---
 
 ## What it does
 
 Type a Google Font (e.g. *Poppins*) and SPOOR returns the sites that actually **use** it — not sites that merely mention it by name, but sites that load the font in their CSS. Results are ordered by site popularity, most-visited first.
+
+![SPOOR — results](assets/results.jpg)
 
 ## What it is not
 
@@ -36,7 +42,7 @@ SPOOR shows a large sample, not a census:
 - Only Google Fonts. Self-hosted and Adobe are out of scope.
 - A monthly snapshot, not real-time.
 
-A font used inside an image, or loaded on a page that isn't crawled, is invisible here. SPOOR states this openly rather.
+A font used inside an image, or loaded on a page that isn't crawled, is invisible here. SPOOR states this openly rather than pretending to be complete.
 
 ---
 
@@ -46,19 +52,32 @@ A font used inside an image, or loaded on a page that isn't crawled, is invisibl
 - **Index:** Cloudflare D1.
 - **Hosting + function:** Cloudflare Pages.
 
-## Monthly refresh
+## Project structure
 
-Re-run the BigQuery extraction, reload D1.
+```
+spoor/
+├── index.html                  # the interface
+├── README.md
+├── REFRESH.md                  # how to update the index each month
+├── assets/                     # screenshots
+└── functions/
+    └── api/
+        └── search.js           # serverless search — queries D1
+```
+
+## Keeping it current
+
+The index is a monthly snapshot and needs to be reloaded periodically. See **[REFRESH.md](REFRESH.md)** for the step-by-step refresh procedure.
 
 ---
 
 ## Typeface
 
-SPOOR is set in **Pliant**, by [Non Foundry](https://fonts.google.com/specimen/Pliant) — a deliberate choice: the tool for tracking Google Fonts, dressed in the maker's own Google Font.
+SPOOR is set in **Pliant**, by [Non Foundry](https://fonts.google.com/specimen/Pliant) — a deliberate choice: the tool for tracking Google Fonts, dressed in the maker's own Google Font. The homepage title cycles live through Google Fonts as a demo of what the tool does.
 
 ## Credits
 
-Designed and built by **Jona Saucedo** / **Non Foundry**.
+Designed and built by **Jona Saucedo** / **Non Foundry**, 2026.
 
 ---
 
