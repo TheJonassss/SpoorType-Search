@@ -4,7 +4,7 @@
 
 SPOOR is a free search tool for the type community. Type the name of a Google Fonts family and get back a list of real websites that load that font in their code, ranked by popularity, each linking straight to the site.
 
-![SPOOR — home](assets-home.jpg)
+![SPOOR — home](assets/home.jpg)
 
 It is a search engine, not a platform — no uploads, no accounts, no human curation. Just a box and a list of results.
 
@@ -14,7 +14,7 @@ It is a search engine, not a platform — no uploads, no accounts, no human cura
 
 Type a Google Font (e.g. *Poppins*) and SPOOR returns the sites that actually **use** it — not sites that merely mention it by name, but sites that load the font in their CSS. Results are ordered by site popularity, most-visited first.
 
-![SPOOR — results](assets-results.jpg)
+![SPOOR — results](assets/results.jpg)
 
 ## What it is not
 

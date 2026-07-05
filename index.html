@@ -25,8 +25,6 @@
   .home{min-height:100dvh;display:flex;flex-direction:column;padding:clamp(24px,4vw,44px) clamp(24px,5vw,56px);}
   .home-top{display:flex;flex-direction:column;align-items:center;text-align:center;}
   .h-title{font-weight:400;font-size:clamp(44px,11vw,210px);line-height:.92;letter-spacing:-.03em;margin:0;white-space:nowrap;transition:opacity .28s ease;}
-  .h-cap{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gray);margin-top:14px;align-self:flex-start;}
-  .h-cap b{color:var(--ink);font-weight:400}
   .h-mid{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:5vh 0;}
   .h-copy{font-weight:450;font-size:clamp(15px,1.8vw,19px);line-height:1.5;margin:0 0 26px;}
   .h-box{display:flex;width:100%;max-width:480px;background:var(--ink);}
@@ -114,7 +112,6 @@
 <section class="home">
   <div class="home-top">
     <h1 class="h-title" id="title">Spoor Type Search</h1>
-    <div class="h-cap">Set in <b id="title-cap">Pliant</b></div>
   </div>
   <div class="h-mid">
     <p class="h-copy">Find any Google Font in use.<br>Type a family name, see the real sites that load it.</p>
@@ -162,7 +159,7 @@
 (function(){
   var PAGE=20;
   var body=document.body;
-  var titleEl=document.getElementById('title'), titleCap=document.getElementById('title-cap');
+  var titleEl=document.getElementById('title');
   var qHome=document.getElementById('q-home');
   var rFont=document.getElementById('r-font');
   var scroll=document.getElementById('scroll'), list=document.getElementById('list'), ghost=document.getElementById('ghost');
@@ -181,7 +178,7 @@
 
   var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var fi=0;
-  function showTitleFont(i){var fam=FONTS[i];titleEl.style.opacity='0';setTimeout(function(){titleEl.style.fontFamily="'"+fam+"','Pliant',sans-serif";titleCap.textContent=fam;titleEl.style.opacity='1';},160)}
+  function showTitleFont(i){var fam=FONTS[i];titleEl.style.opacity='0';setTimeout(function(){titleEl.style.fontFamily="'"+fam+"','Pliant',sans-serif";titleEl.style.opacity='1';},160)}
   function startRot(){if(reduce||rotTimer)return;rotTimer=setInterval(function(){fi=(fi+1)%FONTS.length;showTitleFont(fi)},2800)}
   function stopRot(){if(rotTimer){clearInterval(rotTimer);rotTimer=null}}
   startRot();
