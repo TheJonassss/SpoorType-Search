@@ -23,7 +23,7 @@
 
   /* ---------- HOME ---------- */
   .home{min-height:100dvh;display:flex;flex-direction:column;padding:clamp(24px,4vw,44px) clamp(24px,5vw,56px);}
-  .home-top{display:flex;flex-direction:column;}
+  .home-top{display:flex;flex-direction:column;align-items:center;text-align:center;}
   .h-title{font-weight:400;font-size:clamp(44px,11vw,210px);line-height:.92;letter-spacing:-.03em;margin:0;white-space:nowrap;transition:opacity .28s ease;}
   .h-cap{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gray);margin-top:14px;}
   .h-cap b{color:var(--ink);font-weight:400}
@@ -86,6 +86,7 @@
   .note{padding:clamp(30px,6vw,70px) clamp(24px,5vw,56px)}
   .note h3{font-weight:500;font-size:clamp(20px,2.4vw,28px);margin:0 0 12px;letter-spacing:-.01em}
   .note p{color:var(--gray);font-weight:300;font-size:15px;margin:0 0 8px;max-width:44ch}
+  .note-empty h3{margin:0 0 4px}
 
   /* modal Info */
   .modal{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(17,17,16,.4)}
@@ -231,7 +232,7 @@
     if(!rows.length){
       ghost.textContent='0000';
       body.classList.add('hovering');   // muestra el número gigante fijo
-      list.innerHTML='<div class="note"><h3>No traces yet</h3><p>We couldn\u2019t find any sites loading this font.</p><p>Check the spelling, use the exact Google Fonts family name, and remember SPOOR only indexes Google Fonts.</p></div>';
+      list.innerHTML='<div class="note note-empty"><h3>No traces yet</h3><p>We couldn\u2019t find any sites loading this font.</p></div>';
       return;
     }
     state.rows=rows;state.shown=0;list.innerHTML='';appendBatch();
