@@ -123,9 +123,9 @@
     </form>
   </div>
   <div class="h-ledger">
-    <span><b>1,997</b> families indexed</span>
-    <span class="c"><b>121,207</b> sites tracked</span>
-    <span class="r">HTTP Archive · <b>May 2026</b></span>
+    <span><b id="st-fam">—</b> families indexed</span>
+    <span class="c"><b id="st-dom">—</b> sites tracked</span>
+    <span class="r">HTTP Archive · <b id="st-crawl">—</b></span>
   </div>
 </section>
 
@@ -249,6 +249,18 @@
   }
   document.getElementById('form-home').addEventListener('submit',function(e){e.preventDefault();search(qHome.value)});
   qHome.focus();
+
+  // cifras reales del índice (se actualizan solas con cada refresco mensual)
+  fetch('/api/stats')
+    .then(function(res){return res.json()})
+    .then(function(s){
+      if(!s||s.error)return;
+      var fmt=function(n){return Number(n).toLocaleString('en-US')};
+      if(s.familias) document.getElementById('st-fam').textContent=fmt(s.familias);
+      if(s.dominios) document.getElementById('st-dom').textContent=fmt(s.dominios);
+      if(s.crawl)    document.getElementById('st-crawl').textContent=s.crawl;
+    })
+    .catch(function(){});
 })();
 </script>
 </body>
