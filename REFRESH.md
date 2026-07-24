@@ -1,8 +1,10 @@
 # Refreshing the SPOOR index
 
-SPOOR serves search results from a **Cloudflare D1** database — a monthly snapshot of Google Fonts usage taken from HTTP Archive. The live search never touches BigQuery; it reads this pre-computed index. That means the index **ages**: HTTP Archive publishes a new crawl every month, so to keep results current the database has to be reloaded periodically (monthly is ideal; every couple of months is fine).
+SPOOR serves results from a **Cloudflare D1** database — a monthly snapshot of Google Fonts usage taken from HTTP Archive. The live search never touches BigQuery; it reads this pre-computed index. That means the index **ages**, so it should be reloaded roughly once a month.
 
-This is a manual, no-server process. It's free.
+This procedure loads the new month into a **separate table** while the live one keeps serving, then swaps them in seconds. The site never goes down.
+
+It's manual, server-less and free.
 
 ---
 
@@ -10,13 +12,26 @@ This is a manual, no-server process. It's free.
 
 - A Google account with access to the **BigQuery Sandbox** (no card).
 - **Wrangler** installed and logged in (`npx wrangler login`).
-- The exported CSV converted into SQL load files (see step 2).
 
 ---
 
-## Step 1 — Pull the new index from BigQuery
+## Step 1 — Check which crawl is published
 
-Open the BigQuery console and run the extraction query, changing `date` to the **latest available crawl** (crawls are dated the first of each month, e.g. `2026-06-01`). Check the "This query will process ~18 GB" estimate before running.
+HTTP Archive publishes a new crawl each month, usually available towards the end of that month. This query lists the available crawl dates and **costs nothing** (metadata queries are free):
+
+```sql
+SELECT partition_id
+FROM `httparchive.crawl.INFORMATION_SCHEMA.PARTITIONS`
+WHERE table_name = 'requests'
+ORDER BY partition_id DESC
+LIMIT 6
+```
+
+The newest date at the top is the crawl to use. Ignore any `__NULL__` row.
+
+## Step 2 — Extract the new index
+
+Run the extraction query in BigQuery, setting `date` to the crawl from step 1. Check the "This query will process ~18 GB" estimate before running — that's a small fraction of the free 1 TB/month.
 
 ```sql
 WITH pares AS (
@@ -25,7 +40,7 @@ WITH pares AS (
     NET.REG_DOMAIN(page)                                   AS dominio,
     MIN(rank)                                              AS rank
   FROM `httparchive.crawl.requests`
-  WHERE date = '2026-06-01'          -- <-- change to the newest crawl
+  WHERE date = '2026-07-01'          -- <-- newest crawl
     AND client = 'desktop'
     AND type = 'font'
     AND url LIKE '%fonts.gstatic.com/s/%'
@@ -43,60 +58,77 @@ WHERE posicion <= 100
 ORDER BY familia, rank
 ```
 
-Then **export the result as CSV** (Save results → CSV, or via Drive if it's large).
+Then **Save results → CSV** and download it.
 
-## Step 2 — Turn the CSV into SQL load files
+## Step 3 — Turn the CSV into SQL load files
 
-D1 loads data from `.sql` files of `INSERT` statements. Convert the CSV into two files, each **under the daily write limit** (split so a single day's load doesn't exceed it). A short script does this, or Claude can generate the two files from the exported CSV.
+D1 loads from `.sql` files of batched `INSERT` statements. Convert the CSV into **two files**, split so that a single day's load stays under the free plan's daily write limit (~95,000 rows in the first file works well).
 
-Result: `parte1.sql` and `parte2.sql` (batched `INSERT INTO uso (familia,dominio,rank) VALUES (...),(...);`).
-
-## Step 3 — Reset the table (cheap) and load
-
-Instead of deleting rows one by one (which counts as writes), **drop and recreate** the table — that's a structural (DDL) operation and clears the old month cleanly. Recreate it **without the index first**, so the load writes each row once instead of twice.
-
-Run in the D1 console (dashboard) or via Wrangler:
+Each statement targets the temporary table:
 
 ```sql
-DROP TABLE IF EXISTS uso;
-CREATE TABLE uso (familia TEXT NOT NULL, dominio TEXT NOT NULL, rank INTEGER);
+INSERT INTO uso_nuevo (familia,dominio,rank) VALUES ('roboto','samsung.com',1000), ... ;
 ```
 
-Then load the data with Wrangler (from the folder holding the files):
+## Step 4 — Create the temporary table (no index yet)
+
+```bash
+npx wrangler d1 execute spoor-index --remote --command "CREATE TABLE uso_nuevo (familia TEXT NOT NULL, dominio TEXT NOT NULL, rank INTEGER);"
+```
+
+**Do not create the index at this point.** Inserting into an indexed table writes each row twice (once to the table, once to the index). Loading without the index halves the writes; the index is created once at the end.
+
+## Step 5 — Load the data
+
+From the folder holding the `.sql` files:
 
 ```bash
 npx wrangler d1 execute spoor-index --remote --file=parte1.sql
-# if the daily write limit is hit, wait for reset (00:00 UTC) and run:
 npx wrangler d1 execute spoor-index --remote --file=parte2.sql
 ```
 
-## Step 4 — Recreate the index
+If the daily write limit is reached, the second file can be loaded once the limit resets. Throughout the load the live site keeps serving from the old table.
 
-Once all rows are loaded, rebuild the index that makes searches fast:
+Verify the row count matches the CSV:
 
-```sql
-CREATE INDEX idx_familia ON uso (familia);
+```bash
+npx wrangler d1 execute spoor-index --remote --command "SELECT COUNT(*) AS total FROM uso_nuevo;"
 ```
 
-Loading **without** the index and creating it once at the end avoids the double-write that happens when inserting into an already-indexed table.
+## Step 6 — Create the index on the new table
 
-## Step 5 — Verify
+```bash
+npx wrangler d1 execute spoor-index --remote --command "CREATE INDEX idx_familia_nuevo ON uso_nuevo (familia);"
+```
+
+## Step 7 — Swap the tables
+
+Only after the row count checks out. This takes seconds:
+
+```bash
+npx wrangler d1 execute spoor-index --remote --command "DROP TABLE uso;"
+npx wrangler d1 execute spoor-index --remote --command "ALTER TABLE uso_nuevo RENAME TO uso;"
+npx wrangler d1 execute spoor-index --remote --command "DROP INDEX IF EXISTS idx_familia_nuevo; CREATE INDEX IF NOT EXISTS idx_familia ON uso (familia);"
+```
+
+The last command restores the standard index name, so the next refresh starts from the same state.
+
+## Step 8 — Verify
 
 ```bash
 npx wrangler d1 execute spoor-index --remote --command "SELECT COUNT(*) AS total FROM uso;"
 npx wrangler d1 execute spoor-index --remote --command "SELECT dominio, rank FROM uso WHERE familia='roboto' ORDER BY rank LIMIT 5;"
 ```
 
-The count should match the row count of the new CSV, and a known family (e.g. `roboto`) should return real domains. Done — the live site now serves the new month with no redeploy needed.
+The count should match the new CSV, and a known family should return real domains. Then search on the live site to confirm. **No redeploy is needed** — the frontend and the search function are untouched by a refresh.
 
 ---
 
 ## Notes
 
-- **Write limits reset daily (00:00 UTC).** If a load errors saying the limit is exceeded, wait for the reset and continue with the next file. Splitting into two files is the safe default.
-- **The `date` is the only thing that changes** month to month. Everything else stays the same.
-- **This process only touches the database.** The frontend (`index.html`) and the search function (`functions/api/search.js`) are untouched by a refresh.
-- HTTP Archive is a sample, not a census (only crawled sites, homepage only, name visible in the URL). A refresh brings a fresher sample, not completeness.
+- **Only the `date` changes** month to month. Everything else stays the same.
+- **A refresh only touches the database.** `index.html` and `functions/api/search.js` are unaffected.
+- HTTP Archive is a sample, not a census (crawled sites only, homepage only, font name visible in the URL). A refresh brings a fresher sample, not completeness.
 
 ---
 
