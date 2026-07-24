@@ -113,14 +113,30 @@ npx wrangler d1 execute spoor-index --remote --command "DROP INDEX IF EXISTS idx
 
 The last command restores the standard index name, so the next refresh starts from the same state.
 
-## Step 8 — Verify
+## Step 8 — Recalculate the index stats
+
+The homepage footer reads its figures from a small `meta` table, so they stay accurate on their own — but only if this table is recalculated after each refresh. Otherwise the site will show last month's numbers alongside this month's data.
+
+```bash
+npx wrangler d1 execute spoor-index --remote --command "DELETE FROM meta; INSERT INTO meta (clave,valor) SELECT 'familias', COUNT(DISTINCT familia) FROM uso;"
+npx wrangler d1 execute spoor-index --remote --command "INSERT INTO meta (clave,valor) SELECT 'dominios', COUNT(DISTINCT dominio) FROM uso;"
+npx wrangler d1 execute spoor-index --remote --command "INSERT INTO meta (clave,valor) VALUES ('crawl','August 2026');"
+```
+
+Set the `crawl` value to the month of the crawl just loaded. These counts scan the whole table, which is why they run **once per refresh** rather than on every page view — `/api/stats` then only reads three rows.
+
+## Step 9 — Verify
 
 ```bash
 npx wrangler d1 execute spoor-index --remote --command "SELECT COUNT(*) AS total FROM uso;"
 npx wrangler d1 execute spoor-index --remote --command "SELECT dominio, rank FROM uso WHERE familia='roboto' ORDER BY rank LIMIT 5;"
 ```
 
-The count should match the new CSV, and a known family should return real domains. Then search on the live site to confirm. **No redeploy is needed** — the frontend and the search function are untouched by a refresh.
+```bash
+npx wrangler d1 execute spoor-index --remote --command "SELECT * FROM meta;"
+```
+
+The count should match the new CSV, a known family should return real domains, and `meta` should hold the new figures. Then open the live site: the footer should show the new numbers and crawl month, and search should work as before. **No redeploy is needed** — the frontend and the functions are untouched by a refresh.
 
 ---
 
