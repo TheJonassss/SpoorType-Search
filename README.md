@@ -19,7 +19,7 @@ Type a Google Font (e.g. *Poppins*) and SPOOR returns the sites that actually **
 ## What it is not
 
 - **Not for fonts outside Google Fonts.** Self-hosted (commercial) foundries, Adobe Fonts, print: out of scope.
-- **Not a text search.** It doesn't look for the font's name across the web. It detects real usage in site code.
+- **Not a text search.** It doesn't look for the font's name across the web (that was tried and dropped — too noisy). It detects real usage in site code.
 - **Not a font identifier.** No image recognition.
 - **Not a foundry or marketplace.** It doesn't sell or host fonts.
 
@@ -59,10 +59,12 @@ spoor/
 ├── index.html                  # the interface
 ├── README.md
 ├── REFRESH.md                  # how to update the index each month
-├── assets/                     # screenshots
+├── home.jpg                    # screenshots (home + results)
+├── results.jpg
 └── functions/
     └── api/
-        └── search.js           # serverless search — queries D1
+        ├── search.js           # serverless search — queries D1
+        └── stats.js            # index figures for the homepage footer
 ```
 
 ## Keeping it current
