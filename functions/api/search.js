@@ -16,7 +16,8 @@ const BLOCKED = new Set([
   "youjizz.com","porn300.com","porndish.com","pornhd.com","hentaihaven.xxx",
   "nhentai.net","rule34.xxx","e-hentai.org","fapello.is","porngo.com","4tube.com",
   "drtuber.com","nuvid.com","sunporno.com","porntube.com","tnaflix.com","empflix.com",
-  "onlyfans.com","fansly.com","adultfriendfinder.com","xvideos2.com","xnxx-cdn.com"
+  "onlyfans.com","fansly.com","adultfriendfinder.com","xvideos2.com","xnxx-cdn.com",
+  "pornhat.com","missav.live","njavtv.com","rule34video.com","aznude.com","sxyprn.com"
 ]);
 
 // TLDs que son inequívocamente adultos
